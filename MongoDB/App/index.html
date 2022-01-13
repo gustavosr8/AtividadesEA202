@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Entregável 6</title>
+  <meta charset="UTF-8">
+  <meta name="author" content="Gustavo de Souza dos Reis">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+</head>
+<style type="text/css">
+  .tg  {border-collapse:collapse;border-spacing:0;}
+  .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+    overflow:hidden;padding:10px 5px;word-break:normal;}
+  .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+    font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+  .tg .tg-baqh{text-align:center;vertical-align:top}
+  .tg .tg-ahzk{background-color:#6665cd;color:#f8ff00;text-align:center;vertical-align:top}
+</style>
+<body>
+
+<h1>Manipulador de Recursos</h1>
+
+<br>
+
+<div id="app">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+  <form @submit.prevent="clear">
+    
+    <h4>Inserção e Update de Alunos</h4>
+
+    <div>
+      
+      RA:    <input type="text" v-model="ra" size=5>
+      Nome:  <input type="text" v-model="nome" size=15>
+      Curso: <input type="text" v-model="curso" size=10>
+
+      <br><br>
+
+      <div>
+      <button v-on:click="doPost()">Insert</button>
+      <button v-on:click="doPut()">Update</button>
+      </div>
+
+    </div>
+    <hr>
+    <h4>Consulta e Deleção de Alunos</h4>
+
+    <div>
+      <label for="fraconsulta">RA:</label>
+      <input type="text" id="fraconsulta" v-model="recursoRA" size=5>
+
+      <br><br>
+
+      <button v-on:click="doGet()">Consulta</button>
+      <button v-on:click="doDelete()">Delete</button>
+
+    </div>
+    <hr>
+    <h2>Resultado</h2>
+    <table class="tg">
+      <thead v-if="alunos.length > 0">
+        <tr>
+          <th class="tg-ahzk">RA</th>
+          <th class="tg-ahzk">NOME</th>
+          <th class="tg-ahzk">CURSO</th>
+        </tr>
+      </thead>
+      <tbody v-if="alunos.length > 0">
+        <tr v-for="a in alunos">
+          <td class="tg-baqh">{{a.ra}}</td>
+          <td class="tg-baqh">{{a.nome}}</td>
+          <td class="tg-baqh">{{a.curso}}</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </form>    
+    
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.2/axios.js"></script>
+<script>
+  var app = new Vue({
+    el: '#app',
+    data: { 
+         payload: '',
+         codigo: '',
+         recursoRA: '',
+         recurso: '/alunos',
+         ra: '',
+         nome: '',
+         curso: '',
+         alunos: '',
+    },
+    methods: {
+    
+    // GET
+    doGet: async function () {
+       app.doClear();
+       var url = app.recurso;
+       if (app.recursoRA.length >0){
+         url = "/alunos/" + app.recursoRA;
+       }
+       var data = app.repr;
+       var request = axios({"method": "get","url": url});
+       try {
+         response = await request
+       } catch (error) {
+         response = {"data": { "resultado": " URL inválida" }, "status": 404, "statusText": "Error"}
+       }
+       app.alunos = response.data.alunos;
+       if (app.recursoRA.length >0){
+        app.ra = app.alunos[0].ra
+        app.nome = app.alunos[0].nome
+        app.curso = app.alunos[0].curso
+       }
+       
+       app.payload = response.data;
+       app.codigo = response.status + " "+ response.statusText;
+    },
+  
+    // POST
+    doPost: async function () {
+       var url = app.recurso;
+       var data = {
+          "ra":    app.ra,
+          "nome":  app.nome,
+          "curso": app.curso
+       };
+       var request = axios({
+                   "method": "post",
+                   "url": url,
+                   "headers": { "Content-Type": "application/json" },
+                   "data": data});
+        try {
+         response = await request
+       } catch (error) {
+         response = response = {"data": { "resultado": " URL inválida" }, "status": 404, "statusText": "Error"}
+       } 
+        app.doGet()
+        app.payload = response.data;
+        app.codigo = response.status + " "+ response.statusText;        
+    },
+  
+    // PUT
+    doPut: async function() {
+       var url = "/alunos/"+app.ra;
+       var data = {
+        "ra":    app.ra,
+        "nome":  app.nome,
+        "curso": app.curso
+       };
+       var request = axios({
+                   "method": "put",
+                   "url": url,
+		   "headers": { "Content-Type": "application/json" },		   
+                   "data": data});
+        try {
+        response = await request
+       } catch (error) {
+         response = {"data": { "resultado": " URL inválida" }, "status": 404, "statusText": "Error"}
+       }
+        app.doGet()
+        app.payload = response.data;
+        app.codigo = response.status + " "+ response.statusText;
+    },
+  
+    // DELETE
+    doDelete: async function() {
+       var url = "/alunos/"+app.recursoRA;
+       var request = axios({
+                   "method": "delete",
+                   "url": url});
+        try {
+        response = await request
+       } catch (error) {
+         response = {"data": { "resultado": " URL inválida" }, "status": 404, "statusText": "Error"}
+       }
+        app.recursoRA = ''
+        app.doGet()
+        app.payload = response.data;
+        app.codigo = response.status + " "+ response.statusText;            
+     },
+  
+    // CLEAR
+    doClear: async function() {
+      app.alunos = [];
+      app.ra = '';
+      app.curso = '';
+      app.nome = '';
+      app.codigo = "";
+      app.payload = "";
+      }
+    }
+   }
+  
+  )
+  </script> 
+</body>
+</html>
+

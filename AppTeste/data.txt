@@ -1,0 +1,1 @@
+[{"ra":"123456","nome":"Albert Einstein","curso":"Fisica"},{"ra":"217425","nome":"Reis","curso":"Comp"}]
